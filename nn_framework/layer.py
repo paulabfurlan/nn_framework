@@ -19,6 +19,8 @@ class Dense(object):
             size=(self.m_inputs + 1, self.n_outputs)) * 2  - 1)
         self.x = np.zeros((1, self.m_inputs + 1))
         self.y = np.zeros((1, self.n_outputs))
+        
+        self.v = np.zeros((1, self.n_outputs))  #same dimension as y
 
     def forward_prop(self, inputs):
         """
@@ -29,20 +31,31 @@ class Dense(object):
         """
         bias = np.ones((1, 1))
         self.x = np.concatenate((inputs, bias), axis=1)
-        v = self.x @ self.weights
-        self.y = self.activate.calc(v)
+        
+        #v = self.x @ self.weights
+        self.v = self.x @ self.weights
+        
+        #self.y = self.activate.calc(v)
+        self.y = self.activate.calc(self.v)
         return self.y
 
     def back_prop(self, de_dy):
         """
         Propagate the outputs back through the layer.
         """
-        dy_dv = self.activate.calc_d(self.y)
+        #dy_dv = self.activate.calc_d(self.y)
+        dy_dv = self.activate.calc_d(self.v)
+        
         # v = self.x @ self.weights
         # dv_dw = self.x
         # dv_dx = self.weights
         dy_dw = self.x.transpose() @ dy_dv
         de_dw = de_dy * dy_dw
-        self.weights -= de_dw * self.learning_rate
+        
         de_dx = (de_dy * dy_dv) @ self.weights.transpose()
+        
+        #self.weights -= de_dw * self.learning_rate
+        change = de_dw * self.learning_rate
+        self.weights = np.subtract(self.weights, change)
+        
         return de_dx[:, :-1]

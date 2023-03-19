@@ -31,6 +31,6 @@ def relu(v):
     @staticmethod
     def calc_d(v):
         derivative = 0
-        if v > 0:
+        if np.heaviside(v,0):#v > 0:
             derivative = 1
         return derivative
